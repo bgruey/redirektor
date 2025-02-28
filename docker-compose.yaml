@@ -1,0 +1,34 @@
+services:
+  redirektor-server:
+    depends_on:
+      redirektor-db:
+        condition: service_healthy
+    build:
+      context: ./server/
+    image: redirektor-server
+    container_name: redirektor-server
+    init: true
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    networks:
+      - redirektor
+
+  redirektor-db:
+    image: postgres
+    container_name: redirektor-db
+    restart: always
+    init: true
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U postgres"]
+      interval: 5s
+      timeout: 60s
+      retries: 5
+      start_period: 10s 
+    networks:
+      - redirektor
+networks:
+  redirektor:
