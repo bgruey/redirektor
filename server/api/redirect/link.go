@@ -2,52 +2,33 @@ package redirect
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
+	"sync"
+
 	"redirektor/server/api/utils"
 	"redirektor/server/model"
 	"redirektor/server/repo"
-	"strings"
-	"sync"
 )
 
-type UpdatesHandler struct {
+type LinkHandler struct {
 	sync.Mutex
-	psql     *repo.PostgresClient
-	Password string
-	host     string
+	psql *repo.PostgresClient
+	host string
 }
 
-func NewUpdatesHandler() *UpdatesHandler {
-	ret := new(UpdatesHandler)
+func NewLinkHandler() *LinkHandler {
+	ret := new(LinkHandler)
 	ret.psql = repo.NewPostgresClient()
 
-	ret.Password = os.Getenv("API_PASSWORD")
 	ret.host = strings.TrimRight(os.Getenv("HOST"), "/")
-
-	key := model.NewApiKey()
-	count, err := ret.psql.CountApiKeys(nil)
-	if err != nil {
-		panic(err)
-	}
-	if count < 1 {
-		ret.psql.CreateApiKey(key, nil)
-	} else {
-		key, err = ret.psql.GetSingleApiKey(nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-	fmt.Printf("API-Key: %s\n", key.Key)
 
 	return ret
 }
 
-func (rh *UpdatesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	utils.EnableCors(&w)
-
+func (rh *LinkHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		rh.post(w, r)
@@ -57,7 +38,7 @@ func (rh *UpdatesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (uh *UpdatesHandler) post(w http.ResponseWriter, r *http.Request) {
+func (uh *LinkHandler) post(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
@@ -82,6 +63,6 @@ func (uh *UpdatesHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(
 		w, http.StatusCreated,
-		map[string]string{"short-url": uh.host + "/" + redirect.Hash},
+		map[string]string{"short_url": uh.host + "/" + redirect.Hash},
 	)
 }
