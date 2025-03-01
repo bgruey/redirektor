@@ -2,9 +2,10 @@ package redirect
 
 import (
 	"net/http"
+	"sync"
+
 	"redirektor/server/api/utils"
 	"redirektor/server/repo"
-	"sync"
 )
 
 type RedirectHandler struct {
@@ -22,8 +23,6 @@ func NewRedirectHandler(mutex *http.ServeMux) *RedirectHandler {
 }
 
 func (rh *RedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	utils.EnableCors(&w)
-
 	switch r.Method {
 	case "GET":
 		rh.get(w, r)

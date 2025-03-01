@@ -2,12 +2,12 @@ package repo
 
 import (
 	"errors"
-	"log"
-	"redirektor/server/model"
-	"redirektor/server/utils"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
+
+	"redirektor/server/model"
+	"redirektor/server/utils"
 )
 
 func (pc *PostgresClient) CreateRedirect(redirect *model.Redirect, tx *gorm.DB) (err error) {
