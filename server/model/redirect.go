@@ -7,6 +7,7 @@ type Redirect struct {
 	Hash      string `gorm:"unique_index"`
 	Link      string `gorm:"unique_index" json:"link"`
 	Count     int64  `gorm:"default:0"`
+	QRCode    []byte `gorm:"default null"`
 }
 
 func NewLink(link string) *Redirect {
