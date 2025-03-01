@@ -60,6 +60,8 @@ This method creates a link redirect. The action is idempotent, with subsequent c
 
 The hash is defined as the Base64 representation via [RFC 4648.5](https://en.wikipedia.org/wiki/Base64#Variants_summary_table) of the SHA256 of the link supplied, using the minimum number of characters to make the hash unique in the database. This means the first hash will always be a single character.
 
+The redirect also has a qrcode with a transparent background that is returned with the response. The bytes are base64 encoded, need to be decoded then saved to a png file.
+
 ##### Request
 ```json
 {
@@ -70,7 +72,8 @@ The hash is defined as the Base64 representation via [RFC 4648.5](https://en.wik
 ##### Response
 ```json
 {
-    "short_url":"<root url>/<hash: string>"
+    "short_url": "<root url>/<hash: string>"
+    "qrcode_b64": <base64 encoded png bytes of qrcode>
 }
 ```
 

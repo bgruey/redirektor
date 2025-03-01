@@ -1,6 +1,7 @@
 package redirect
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -63,6 +64,9 @@ func (uh *LinkHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(
 		w, http.StatusCreated,
-		map[string]string{"short_url": uh.host + "/" + redirect.Hash},
+		map[string]any{
+			"short_url":  uh.host + "/" + redirect.Hash,
+			"qrcode_b64": base64.StdEncoding.EncodeToString(redirect.QRCode),
+		},
 	)
 }
