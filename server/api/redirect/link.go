@@ -11,6 +11,7 @@ import (
 
 	"redirektor/server/api/utils"
 	"redirektor/server/model"
+	"redirektor/server/qrcode"
 	"redirektor/server/repo"
 )
 
@@ -57,15 +58,29 @@ func (uh *LinkHandler) post(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid json data")
 	}
 
+	redirect.OwnerKey = r.Header.Get(AuthHeaderKey)
+
 	err = uh.psql.CreateRedirect(&redirect, nil)
 	if err != nil {
 		panic(err)
 	}
 
+	// double save to db because we minimize the number of characters
+	// in the hash
+	shortUrl := uh.host + "/" + redirect.Hash
+	redirect.QRCode, err = qrcode.GenerateQRBytes(shortUrl)
+	if err != nil {
+		return
+	}
+	err = uh.psql.SaveRedirect(&redirect, nil)
+	if err != nil {
+		return
+	}
+
 	utils.RespondWithJSON(
 		w, http.StatusCreated,
 		map[string]any{
-			"short_url":  uh.host + "/" + redirect.Hash,
+			"short_url":  shortUrl,
 			"qrcode_b64": base64.StdEncoding.EncodeToString(redirect.QRCode),
 		},
 	)
