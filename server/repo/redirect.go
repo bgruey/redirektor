@@ -2,13 +2,11 @@ package repo
 
 import (
 	"errors"
-	"log"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 
 	"redirektor/server/model"
-	"redirektor/server/qrcode"
 	"redirektor/server/utils"
 )
 
@@ -22,8 +20,11 @@ func (pc *PostgresClient) CreateRedirect(redirect *model.Redirect, tx *gorm.DB) 
 
 	if linkRedirect != nil {
 		log.Printf("Found link: %s --> %s", linkRedirect.Link, linkRedirect.Hash)
+		// for response
 		redirect.Hash = linkRedirect.Hash
 		redirect.QRCode = linkRedirect.QRCode
+		// trigger update instead of create on save
+		redirect.ID = linkRedirect.ID
 		return
 	}
 
@@ -40,11 +41,6 @@ func (pc *PostgresClient) CreateRedirect(redirect *model.Redirect, tx *gorm.DB) 
 			break
 		}
 		chars++
-	}
-
-	redirect.QRCode, err = qrcode.GenerateQRBytes(redirect.Link)
-	if err != nil {
-		return
 	}
 
 	err = tx.Create(redirect).Error
@@ -108,7 +104,15 @@ func (pc *PostgresClient) GetIncrementRedirectByHash(hash string) (link string, 
 	}
 
 	redirect.Count++
-	tx.Save(redirect)
+	err = tx.Save(redirect).Error
 
-	return redirect.Link, nil
+	return redirect.Link, err
+}
+
+func (pc *PostgresClient) SaveRedirect(redirect *model.Redirect, tx *gorm.DB) (err error) {
+	tx = pc.selfIfNil(tx)
+
+	err = tx.Save(redirect).Error
+
+	return
 }

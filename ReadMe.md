@@ -62,6 +62,8 @@ The hash is defined as the Base64 representation via [RFC 4648.5](https://en.wik
 
 The redirect also has a qrcode with a transparent background that is returned with the response. The bytes are base64 encoded, need to be decoded then saved to a png file.
 
+The owner of the link, defined as the Api key stored in the database, is the last Api key to request creation of the redirect. 
+
 ##### Request
 ```json
 {
